@@ -14,4 +14,8 @@
     <PackageReference Include="YS.Knife.Hosting" Version="1.1.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\YS.Lock.Core\YS.Lock.Core.csproj" />
+  </ItemGroup>
+
 </Project>
