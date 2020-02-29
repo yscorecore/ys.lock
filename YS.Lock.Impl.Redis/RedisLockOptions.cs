@@ -5,8 +5,8 @@ using System.Text;
 
 namespace YS.Lock.Impl.Redis
 {
-    [OptionsClass]
-    public class RedisOptions
+    [OptionsClass("Redis")]
+    public class RedisLockOptions
     {
         public string LockKeyPrefix { get; set; } = "Lock_";
         public string ConnectionString { get; set; } = "localhost";

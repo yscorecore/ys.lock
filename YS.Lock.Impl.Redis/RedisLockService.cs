@@ -7,23 +7,45 @@ using System.Text.Json;
 namespace YS.Lock.Impl.Redis
 {
     [ServiceClass(typeof(ILockService), ServiceLifetime.Singleton)]
-    public class RedisLockService : ILockService, IDisposable
+    public sealed class RedisLockService : ILockService, IDisposable
     {
-        public RedisLockService(IOptions<RedisOptions> options)
+        public RedisLockService(IOptions<RedisLockOptions> options)
         {
             this.options = options.Value;
             this.Connection = new Lazy<ConnectionMultiplexer>(this.CreateConnection, true);
             this.Database = new Lazy<IDatabase>(() => this.Connection.Value.GetDatabase(), true);
         }
-        private RedisOptions options;
+        private RedisLockOptions options;
         private Lazy<ConnectionMultiplexer> Connection;
         private Lazy<IDatabase> Database;
-        public async Task<bool> Lock<T>(string key, T value, TimeSpan timeSpan)
+        public Task<bool> Lock<T>(string key, T token, TimeSpan timeSpan)
         {
             var database = this.Database.Value;
             var lockKey = this.GetRedisKey(key);
-            var lockValue = this.ConvertToString(value);
-            return await database.StringSetAsync(lockKey, lockValue, timeSpan, When.NotExists, CommandFlags.None);
+            var lockValue = this.ConvertToString(token);
+            return database.LockTakeAsync(lockKey, lockValue, timeSpan);
+        }
+        public Task<bool> UnLock<T>(string key, T token)
+        {
+            var database = this.Database.Value;
+            var lockKey = this.GetRedisKey(key);
+            var lockValue = this.ConvertToString(token);
+            return database.LockReleaseAsync(lockKey, lockValue);
+        }
+        public Task<bool> Update<T>(string key, T token, TimeSpan timeSpan)
+        {
+            var database = this.Database.Value;
+            var lockKey = this.GetRedisKey(key);
+            var lockValue = this.ConvertToString(token);
+            return database.LockExtendAsync(lockKey, lockValue, timeSpan);
+        }
+        public async Task<(bool Exists, T Token)> Query<T>(string key)
+        {
+            var database = this.Database.Value;
+            var lockKey = this.GetRedisKey(key);
+            var tokenValue = await database.LockQueryAsync(lockKey);
+            bool hasToken = tokenValue.HasValue;
+            return (hasToken, hasToken ? ConvertToType<T>(tokenValue) : default(T));
         }
         private RedisKey GetRedisKey(string key)
         {
@@ -35,7 +57,12 @@ namespace YS.Lock.Impl.Redis
                     value as string :
                     JsonSerializer.Serialize(value);
         }
-
+        private T ConvertToType<T>(string str)
+        {
+            return typeof(T) == typeof(string) ?
+                     (T)(object)str :
+                     JsonSerializer.Deserialize<T>(str);
+        }
         private ConnectionMultiplexer CreateConnection()
         {
             return options.Configuration != null ?
@@ -44,7 +71,9 @@ namespace YS.Lock.Impl.Redis
         }
 
 
-        public void Dispose()
+#pragma warning disable CA1063 // 正确实现 IDisposable
+        void IDisposable.Dispose()
+#pragma warning restore CA1063 // 正确实现 IDisposable
         {
             if (this.Connection.IsValueCreated)
             {
