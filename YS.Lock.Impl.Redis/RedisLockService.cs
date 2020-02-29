@@ -1,42 +1,51 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using StackExchange.Redis;
+using System;
+using System.Threading.Tasks;
 namespace YS.Lock.Impl.Redis
 {
-    [ServiceClass]
-    public class RedisLockService : ILockService
+    [ServiceClass(typeof(ILockService), ServiceLifetime.Singleton)]
+    public class RedisLockService : ILockService, IDisposable
     {
-        /// <summary>
-        /// The lazy connection.
-        /// </summary>
-        private static Lazy<ConnectionMultiplexer> lazyConnection = new Lazy<ConnectionMultiplexer>(() =>
+        public RedisLockService(IOptions<RedisOptions> options)
         {
-            ConfigurationOptions configuration = new ConfigurationOptions
-            {
-                AbortOnConnectFail = false,
-                ConnectTimeout = 5000,
-            };
-
-            configuration.EndPoints.Add("localhost", 6379);
-
-            return ConnectionMultiplexer.Connect(configuration.ToString());
-        });
-
-        /// <summary>
-        /// Gets the connection.
-        /// </summary>
-        /// <value>The connection.</value>
-        public static ConnectionMultiplexer Connection => lazyConnection.Value;
-        public RedisLockService()
-        {
-
+            this.options = options.Value;
+            this.Connection = new Lazy<ConnectionMultiplexer>(this.CreateConnection, true);
+            this.Database = new Lazy<IDatabase>(() => this.Connection.Value.GetDatabase(), true);
         }
-        private HashSet<string> set = new HashSet<string>();
-        public Task<bool> Lock(string key, TimeSpan timeSpan)
+        private RedisOptions options;
+        private Lazy<ConnectionMultiplexer> Connection;
+        private Lazy<IDatabase> Database;
+        public async Task<bool> Lock(string key, TimeSpan timeSpan)
         {
-            var database = Connection.GetDatabase();
-            return database.StringSetAsync(key, "value", timeSpan, When.NotExists, CommandFlags.None);
+            var lockKey = this.GetRedisKey(key);
+            return await this.Database.Value.StringSetAsync(lockKey, "value", timeSpan, When.NotExists, CommandFlags.None);
+        }
+        private RedisKey GetRedisKey(string key)
+        {
+            return options.LockKeyPrefix + key;
+        }
+
+        private ConnectionMultiplexer CreateConnection()
+        {
+            if (options.Configuration != null)
+            {
+                return ConnectionMultiplexer.Connect(options.Configuration);
+            }
+            else
+            {
+                return ConnectionMultiplexer.Connect(options.ConnectionString);
+            }
+        }
+
+
+        public void Dispose()
+        {
+            if (this.Connection.IsValueCreated)
+            {
+                this.Connection.Value.Dispose();
+            }
         }
     }
 }
