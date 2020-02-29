@@ -37,7 +37,7 @@ namespace YS.Lock
         {
             var key = RandomUtility.RandomVarName(16);
             var res = await lockService.Lock(key, "token", TimeSpan.FromSeconds(2));
-            var res2 = await lockService.Lock(key, "token", TimeSpan.FromSeconds(2));
+            var res2 = await lockService.Lock(key, "token2", TimeSpan.FromSeconds(2));
             Assert.IsFalse(res2);
         }
 

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using YS.Knife.Test;
 
-namespace YS.Lock.Impl.Redis.UnitTest
+namespace YS.Lock.Impl.Redis
 {
     [TestClass]
     public static class TestEnvironment
