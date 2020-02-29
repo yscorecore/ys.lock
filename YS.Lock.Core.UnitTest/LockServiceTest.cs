@@ -26,7 +26,21 @@ namespace YS.Lock
             var key = RandomUtility.RandomVarName(16);
             var res = await lockService.Lock(key, TimeSpan.FromSeconds(2));
             var res2 = await lockService.Lock(key, TimeSpan.FromSeconds(2));
-            Assert.False(res);
+            Assert.False(res2);
+        }
+
+
+        [Fact]
+        public async Task ShouldNotModifyExpiryWhenReLockFailure()
+        {
+            var key = RandomUtility.RandomVarName(16);
+            var res = await lockService.Lock(key, TimeSpan.FromSeconds(2));
+            await Task.Delay(1500);
+            var res2 = await lockService.Lock(key, TimeSpan.FromSeconds(2));
+            Assert.False(res2);
+            await Task.Delay(500);
+            var res3 = await lockService.Lock(key, TimeSpan.FromSeconds(2));
+            Assert.True(res3);
         }
 
         [Fact]
@@ -36,28 +50,30 @@ namespace YS.Lock
             var res = await lockService.Lock(key, TimeSpan.FromSeconds(2));
             await Task.Delay(2000);
             var res2 = await lockService.Lock(key, TimeSpan.FromSeconds(2));
-            Assert.True(res);
+            Assert.True(res2);
         }
 
         [Fact]
         public void ShouldOnlyOneSuccessWhenConcurrenLock()
         {
-            var successCount = Enumerable.Range(0, 5).AsParallel()
-                                .Select(async p => await RunStep(30).ConfigureAwait(false))
+            DateTime dateTime = DateTime.Now;
+            int loopCount = 15;
+            var successCount = Enumerable.Range(0, 4).AsParallel()
+                                .Select(async p => await RunStep(p, dateTime,loopCount))
                                 .Sum(p => p.Result);
-            Assert.Equal(30, successCount);
+            Assert.Equal(loopCount, successCount);
         }
-        private async Task<int> RunStep(int count)
+        private async Task<int> RunStep(int taskId, DateTime start, int count)
         {
             int successCount = 0;
             for (int i = 0; i < count; i++)
             {
-                var key = DateTime.Now.ToString("HHmmss");
+                var key = start.AddSeconds(i).ToString("HHmmss");
                 var success = await lockService.Lock(key, TimeSpan.FromMinutes(2));
                 successCount += Convert.ToInt32(success);
                 if (success)
                 {
-                    Console.WriteLine($"{Task.CurrentId} locked {key}.");
+                    Console.WriteLine($"Task {taskId} locked {key}.");
                 }
                 await Task.Delay(1000);
             }
