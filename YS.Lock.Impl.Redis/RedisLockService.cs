@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using System;
 using System.Threading.Tasks;
+using System.Text.Json;
 namespace YS.Lock.Impl.Redis
 {
     [ServiceClass(typeof(ILockService), ServiceLifetime.Singleton)]
@@ -17,26 +18,29 @@ namespace YS.Lock.Impl.Redis
         private RedisOptions options;
         private Lazy<ConnectionMultiplexer> Connection;
         private Lazy<IDatabase> Database;
-        public async Task<bool> Lock(string key, TimeSpan timeSpan)
+        public async Task<bool> Lock<T>(string key, T value, TimeSpan timeSpan)
         {
+            var database = this.Database.Value;
             var lockKey = this.GetRedisKey(key);
-            return await this.Database.Value.StringSetAsync(lockKey, "value", timeSpan, When.NotExists, CommandFlags.None);
+            var lockValue = this.ConvertToString(value);
+            return await database.StringSetAsync(lockKey, lockValue, timeSpan, When.NotExists, CommandFlags.None);
         }
         private RedisKey GetRedisKey(string key)
         {
             return options.LockKeyPrefix + key;
         }
+        private string ConvertToString<T>(T value)
+        {
+            return typeof(T) == typeof(string) ?
+                    value as string :
+                    JsonSerializer.Serialize(value);
+        }
 
         private ConnectionMultiplexer CreateConnection()
         {
-            if (options.Configuration != null)
-            {
-                return ConnectionMultiplexer.Connect(options.Configuration);
-            }
-            else
-            {
-                return ConnectionMultiplexer.Connect(options.ConnectionString);
-            }
+            return options.Configuration != null ?
+                    ConnectionMultiplexer.Connect(options.Configuration) :
+                    ConnectionMultiplexer.Connect(options.ConnectionString);
         }
 
 

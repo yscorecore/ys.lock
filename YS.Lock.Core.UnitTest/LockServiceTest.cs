@@ -16,18 +16,28 @@ namespace YS.Lock
         private ILockService lockService;
 
         [TestMethod]
+        public async Task CanLockSimpleTypes()
+        {
+            var key = RandomUtility.RandomVarName(16);
+            await lockService.Lock(key + "string", "", TimeSpan.FromSeconds(2));
+            await lockService.Lock(key + "long", 1L, TimeSpan.FromSeconds(2));
+            await lockService.Lock(key + "dateTime", DateTime.Now, TimeSpan.FromSeconds(2));
+        }
+
+
+        [TestMethod]
         public async Task ShouldReturnTrueWhenLockGivenNewKey()
         {
             var key = RandomUtility.RandomVarName(16);
-            var res = await lockService.Lock(key, TimeSpan.FromSeconds(2));
+            var res = await lockService.Lock(key, "value", TimeSpan.FromSeconds(2));
             Assert.IsTrue(res);
         }
         [TestMethod]
         public async Task ShouldReturnFalseWhenLockGivenExistsKey()
         {
             var key = RandomUtility.RandomVarName(16);
-            var res = await lockService.Lock(key, TimeSpan.FromSeconds(2));
-            var res2 = await lockService.Lock(key, TimeSpan.FromSeconds(2));
+            var res = await lockService.Lock(key, "value", TimeSpan.FromSeconds(2));
+            var res2 = await lockService.Lock(key, "value", TimeSpan.FromSeconds(2));
             Assert.IsFalse(res2);
         }
 
@@ -36,12 +46,12 @@ namespace YS.Lock
         public async Task ShouldNotModifyExpiryWhenReLockFailure()
         {
             var key = RandomUtility.RandomVarName(16);
-            var res = await lockService.Lock(key, TimeSpan.FromSeconds(2));
+            var res = await lockService.Lock(key, "value", TimeSpan.FromSeconds(2));
             await Task.Delay(1500);
-            var res2 = await lockService.Lock(key, TimeSpan.FromSeconds(2));
+            var res2 = await lockService.Lock(key, "value", TimeSpan.FromSeconds(2));
             Assert.IsFalse(res2);
             await Task.Delay(500);
-            var res3 = await lockService.Lock(key, TimeSpan.FromSeconds(2));
+            var res3 = await lockService.Lock(key, "value", TimeSpan.FromSeconds(2));
             Assert.IsTrue(res3);
         }
 
@@ -49,9 +59,9 @@ namespace YS.Lock
         public async Task ShouldReturnTrueWhenLockGivenExpiredKey()
         {
             var key = RandomUtility.RandomVarName(16);
-            var res = await lockService.Lock(key, TimeSpan.FromSeconds(2));
+            var res = await lockService.Lock(key, "value", TimeSpan.FromSeconds(2));
             await Task.Delay(2000);
-            var res2 = await lockService.Lock(key, TimeSpan.FromSeconds(2));
+            var res2 = await lockService.Lock(key, "value", TimeSpan.FromSeconds(2));
             Assert.IsTrue(res2);
         }
 
@@ -61,7 +71,7 @@ namespace YS.Lock
             DateTime dateTime = DateTime.Now;
             int loopCount = 15;
             var successCount = Enumerable.Range(0, 4).AsParallel()
-                                .Select(async p => await RunStep(p, dateTime,loopCount))
+                                .Select(async p => await RunStep(p, dateTime, loopCount))
                                 .Sum(p => p.Result);
             Assert.AreEqual(loopCount, successCount);
         }
@@ -71,7 +81,7 @@ namespace YS.Lock
             for (int i = 0; i < count; i++)
             {
                 var key = start.AddSeconds(i).ToString("HHmmss", CultureInfo.InvariantCulture);
-                var success = await lockService.Lock(key, TimeSpan.FromMinutes(2));
+                var success = await lockService.Lock(key, "value", TimeSpan.FromMinutes(2));
                 successCount += Convert.ToInt32(success);
                 if (success)
                 {
