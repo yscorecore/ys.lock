@@ -3,7 +3,7 @@ using System;
 using System.Linq;
 using Xunit;
 using System.Threading.Tasks;
-namespace YS.Lock.Core.UnitTest
+namespace YS.Lock
 {
     public abstract class LockServiceTest : KnifeHost
     {
@@ -43,7 +43,7 @@ namespace YS.Lock.Core.UnitTest
         public void ShouldOnlyOneSuccessWhenConcurrenLock()
         {
             var successCount = Enumerable.Range(0, 5).AsParallel()
-                                .Select(async p => await RunStep(30))
+                                .Select(async p => await RunStep(30).ConfigureAwait(false))
                                 .Sum(p => p.Result);
             Assert.Equal(30, successCount);
         }
