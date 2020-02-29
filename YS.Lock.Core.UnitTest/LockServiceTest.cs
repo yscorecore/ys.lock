@@ -50,7 +50,7 @@ namespace YS.Lock
             await Task.Delay(1500);
             var res2 = await lockService.Lock(key, "token", TimeSpan.FromSeconds(2));
             Assert.IsFalse(res2);
-            await Task.Delay(500);
+            await Task.Delay(800);
             var res3 = await lockService.Lock(key, "token", TimeSpan.FromSeconds(2));
             Assert.IsTrue(res3);
         }
@@ -60,7 +60,7 @@ namespace YS.Lock
         {
             var key = RandomUtility.RandomVarName(16);
             var res = await lockService.Lock(key, "token", TimeSpan.FromSeconds(2));
-            await Task.Delay(2000);
+            await Task.Delay(2200);
             var res2 = await lockService.Lock(key, "token", TimeSpan.FromSeconds(2));
             Assert.IsTrue(res2);
         }
@@ -194,7 +194,7 @@ namespace YS.Lock
             await Task.Delay(1500);
             var res = await lockService.Query<string>(key);
             Assert.IsTrue(res.Exists);
-            await Task.Delay(500);
+            await Task.Delay(800);
             var res2 = await lockService.Query<string>(key);
             Assert.IsFalse(res2.Exists);
         }
