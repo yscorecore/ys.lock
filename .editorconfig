@@ -115,6 +115,12 @@ csharp_space_between_method_call_empty_parameter_list_parentheses = false
 # Wrapping preferences
 csharp_preserve_single_line_statements = true
 csharp_preserve_single_line_blocks = true
+
+
+# CA2007: 考虑对等待的任务调用 ConfigureAwait
+dotnet_diagnostic.CA2007.severity = silent
+# CA1062: 验证公共方法的参数
+dotnet_code_quality.CA1062.exclude_extension_method_this_parameter = false
 ###############################
 # VB Coding Conventions       #
 ###############################

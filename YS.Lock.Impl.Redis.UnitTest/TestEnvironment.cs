@@ -11,7 +11,7 @@ namespace YS.Lock.Impl.Redis
     public static class TestEnvironment
     {
         [AssemblyInitialize()]
-        public static void Setup(TestContext assemblyTestContext)
+        public static void Setup()
         {
             var availablePort = Utility.GetAvailableTcpPort(6379);
             StartContainer(availablePort);

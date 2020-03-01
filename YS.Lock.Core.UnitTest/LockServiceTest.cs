@@ -1,4 +1,4 @@
-using Knife.Hosting;
+﻿using Knife.Hosting;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,7 +13,7 @@ namespace YS.Lock
         {
             this.lockService = this.Get<ILockService>();
         }
-        private ILockService lockService;
+        private readonly ILockService lockService;
 
         [TestMethod]
         public async Task CanLockSimpleTypes()
@@ -36,7 +36,7 @@ namespace YS.Lock
         public async Task ShouldReturnFalseWhenLockGivenExistsKey()
         {
             var key = RandomUtility.RandomVarName(16);
-            var res = await lockService.Lock(key, "token", TimeSpan.FromSeconds(2));
+            await lockService.Lock(key, "token", TimeSpan.FromSeconds(2));
             var res2 = await lockService.Lock(key, "token2", TimeSpan.FromSeconds(2));
             Assert.IsFalse(res2);
         }
@@ -46,7 +46,7 @@ namespace YS.Lock
         public async Task ShouldNotModifyExpiryWhenReLockFailure()
         {
             var key = RandomUtility.RandomVarName(16);
-            var res = await lockService.Lock(key, "token", TimeSpan.FromSeconds(2));
+            await lockService.Lock(key, "token", TimeSpan.FromSeconds(2));
             await Task.Delay(1500);
             var res2 = await lockService.Lock(key, "token", TimeSpan.FromSeconds(2));
             Assert.IsFalse(res2);
@@ -59,7 +59,7 @@ namespace YS.Lock
         public async Task ShouldReturnTrueWhenLockGivenExpiredKey()
         {
             var key = RandomUtility.RandomVarName(16);
-            var res = await lockService.Lock(key, "token", TimeSpan.FromSeconds(2));
+            await lockService.Lock(key, "token", TimeSpan.FromSeconds(2));
             await Task.Delay(2200);
             var res2 = await lockService.Lock(key, "token", TimeSpan.FromSeconds(2));
             Assert.IsTrue(res2);
@@ -170,9 +170,9 @@ namespace YS.Lock
         public async Task ShouldReturnNoExistsWhenQueryGivenNewKey()
         {
             var key = RandomUtility.RandomVarName(16);
-            var res = await lockService.Query<string>(key);
-            Assert.IsFalse(res.Exists);
-            Assert.AreEqual(default(string), res.Token);
+            var (exists, token) = await lockService.Query<string>(key);
+            Assert.IsFalse(exists);
+            Assert.AreEqual(default, token);
         }
 
         [TestMethod]
@@ -181,9 +181,9 @@ namespace YS.Lock
             var key = RandomUtility.RandomVarName(16);
             var time = DateTime.Now;
             await lockService.Lock(key, time, TimeSpan.FromSeconds(2));
-            var res = await lockService.Query<DateTime>(key);
-            Assert.IsTrue(res.Exists);
-            Assert.AreEqual(time, res.Token);
+            var (exists, token) = await lockService.Query<DateTime>(key);
+            Assert.IsTrue(exists);
+            Assert.AreEqual(time, token);
         }
 
         [TestMethod]
@@ -192,11 +192,11 @@ namespace YS.Lock
             var key = RandomUtility.RandomVarName(16);
             await lockService.Lock(key, "token", TimeSpan.FromSeconds(2));
             await Task.Delay(1500);
-            var res = await lockService.Query<string>(key);
-            Assert.IsTrue(res.Exists);
+            var (exists, _) = await lockService.Query<string>(key);
+            Assert.IsTrue(exists);
             await Task.Delay(800);
-            var res2 = await lockService.Query<string>(key);
-            Assert.IsFalse(res2.Exists);
+            var (exists2, _) = await lockService.Query<string>(key);
+            Assert.IsFalse(exists2);
         }
     }
 }

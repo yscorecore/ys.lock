@@ -13,7 +13,7 @@ namespace YS.Lock.Impl.Memory
         {
             this.memoryCache = memoryCache;
         }
-        private IMemoryCache memoryCache;
+        private readonly IMemoryCache memoryCache;
         public Task<bool> Lock<T>(string key, T token, TimeSpan timeSpan)
         {
             // 双重否定加锁

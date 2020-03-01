@@ -11,13 +11,14 @@ namespace YS.Lock.Impl.Redis
     {
         public RedisLockService(IOptions<RedisLockOptions> options)
         {
+            if (options == null) throw new ArgumentNullException(nameof(options));
             this.options = options.Value;
             this.Connection = new Lazy<ConnectionMultiplexer>(this.CreateConnection, true);
             this.Database = new Lazy<IDatabase>(() => this.Connection.Value.GetDatabase(), true);
         }
-        private RedisLockOptions options;
-        private Lazy<ConnectionMultiplexer> Connection;
-        private Lazy<IDatabase> Database;
+        private readonly RedisLockOptions options;
+        private readonly Lazy<ConnectionMultiplexer> Connection;
+        private readonly Lazy<IDatabase> Database;
         public Task<bool> Lock<T>(string key, T token, TimeSpan timeSpan)
         {
             var database = this.Database.Value;
@@ -45,7 +46,7 @@ namespace YS.Lock.Impl.Redis
             var lockKey = this.GetRedisKey(key);
             var tokenValue = await database.LockQueryAsync(lockKey);
             bool hasToken = tokenValue.HasValue;
-            return (hasToken, hasToken ? ConvertToType<T>(tokenValue) : default(T));
+            return (hasToken, hasToken ? ConvertToType<T>(tokenValue) : default);
         }
         private RedisKey GetRedisKey(string key)
         {
