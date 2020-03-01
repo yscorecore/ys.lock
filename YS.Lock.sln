@@ -15,9 +15,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{FCC3CD10-5
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YS.Lock.Impl.Redis.UnitTest", "YS.Lock.Impl.Redis.UnitTest\YS.Lock.Impl.Redis.UnitTest.csproj", "{FCAC07B5-7614-4B74-9610-BB0FFBEE1EF2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YS.Lock.Impl.Memory", "YS.Lock.Impl.Memory\YS.Lock.Impl.Memory.csproj", "{346B0EAF-486C-431B-9F3E-7D2B36992CD1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YS.Lock.Impl.Memory", "YS.Lock.Impl.Memory\YS.Lock.Impl.Memory.csproj", "{346B0EAF-486C-431B-9F3E-7D2B36992CD1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YS.Lock.Impl.Memory.UnitTest", "YS.Lock.Impl.Memory.UnitTest\YS.Lock.Impl.Memory.UnitTest.csproj", "{A8AA6282-E95F-4FF0-B88A-6FA0DA2D6C5C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YS.Lock.Impl.Memory.UnitTest", "YS.Lock.Impl.Memory.UnitTest\YS.Lock.Impl.Memory.UnitTest.csproj", "{A8AA6282-E95F-4FF0-B88A-6FA0DA2D6C5C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F315DA21-29D5-4521-8338-C3D19874CB32}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
