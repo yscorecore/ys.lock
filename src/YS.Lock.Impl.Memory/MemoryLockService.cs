@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Text.Json;
 using System.Threading.Tasks;
+using YS.Knife;
 
 namespace YS.Lock.Impl.Memory
 {

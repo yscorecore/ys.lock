@@ -3,12 +3,13 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Text;
-
+using YS.Knife;
 namespace YS.Lock.Impl.Memory
 {
-    public class ServiceLoader : IServiceLoader
+    public class ServiceRegister : IServiceRegister
     {
-        public void LoadServices(IServiceCollection services, IConfiguration configuration)
+      
+        public void RegisteServices(IServiceCollection services, IRegisteContext context)
         {
             services.AddMemoryCache();
         }

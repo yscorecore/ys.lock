@@ -4,6 +4,8 @@ using StackExchange.Redis;
 using System;
 using System.Threading.Tasks;
 using System.Text.Json;
+using YS.Knife;
+
 namespace YS.Lock.Impl.Redis
 {
     [ServiceClass(typeof(ILockService), ServiceLifetime.Singleton)]

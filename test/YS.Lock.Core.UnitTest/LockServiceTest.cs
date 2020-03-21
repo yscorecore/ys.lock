@@ -1,9 +1,10 @@
-﻿using Knife.Hosting;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Globalization;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using YS.Knife.Hosting;
+using YS.Knife.Test;
 
 namespace YS.Lock
 {
@@ -11,14 +12,14 @@ namespace YS.Lock
     {
         public LockServiceTest()
         {
-            this.lockService = this.Get<ILockService>();
+            this.lockService = this.GetService<ILockService>();
         }
         private readonly ILockService lockService;
 
         [TestMethod]
         public async Task CanLockSimpleTypes()
         {
-            var key = RandomUtility.RandomVarName(16);
+            var key =Utility.NewPassword(16);
             await lockService.Lock(key + "string", "", TimeSpan.FromSeconds(2));
             await lockService.Lock(key + "long", 1L, TimeSpan.FromSeconds(2));
             await lockService.Lock(key + "dateTime", DateTime.Now, TimeSpan.FromSeconds(2));
@@ -28,14 +29,14 @@ namespace YS.Lock
         [TestMethod]
         public async Task ShouldReturnTrueWhenLockGivenNewKey()
         {
-            var key = RandomUtility.RandomVarName(16);
+            var key = Utility.NewPassword(16);
             var res = await lockService.Lock(key, "token", TimeSpan.FromSeconds(2));
             Assert.IsTrue(res);
         }
         [TestMethod]
         public async Task ShouldReturnFalseWhenLockGivenExistsKey()
         {
-            var key = RandomUtility.RandomVarName(16);
+            var key = Utility.NewPassword(16);
             await lockService.Lock(key, "token", TimeSpan.FromSeconds(2));
             var res2 = await lockService.Lock(key, "token2", TimeSpan.FromSeconds(2));
             Assert.IsFalse(res2);
@@ -45,7 +46,7 @@ namespace YS.Lock
         [TestMethod]
         public async Task ShouldNotModifyExpiryWhenReLockFailure()
         {
-            var key = RandomUtility.RandomVarName(16);
+            var key = Utility.NewPassword(16);
             await lockService.Lock(key, "token", TimeSpan.FromSeconds(2));
             await Task.Delay(1500);
             var res2 = await lockService.Lock(key, "token", TimeSpan.FromSeconds(2));
@@ -58,7 +59,7 @@ namespace YS.Lock
         [TestMethod]
         public async Task ShouldReturnTrueWhenLockGivenExpiredKey()
         {
-            var key = RandomUtility.RandomVarName(16);
+            var key = Utility.NewPassword(16);
             await lockService.Lock(key, "token", TimeSpan.FromSeconds(2));
             await Task.Delay(2200);
             var res2 = await lockService.Lock(key, "token", TimeSpan.FromSeconds(2));
@@ -96,14 +97,14 @@ namespace YS.Lock
         [TestMethod]
         public async Task ShouldReturnFalseWhenUnlockNotExistsKey()
         {
-            var key = RandomUtility.RandomVarName(16);
+            var key = Utility.NewPassword(16);
             var res = await lockService.UnLock(key, "token");
             Assert.IsFalse(res);
         }
         [TestMethod]
         public async Task ShouldReturnTrueWhenUnlockGivenExistsKeyAndValidToken()
         {
-            var key = RandomUtility.RandomVarName(16);
+            var key = Utility.NewPassword(16);
             await lockService.Lock(key, "token", TimeSpan.FromSeconds(2));
             var res = await lockService.UnLock(key, "token");
             Assert.IsTrue(res);
@@ -111,7 +112,7 @@ namespace YS.Lock
         [TestMethod]
         public async Task ShouldReturnFalseWhenUnlockGivenExistsKeyAndInvalidToken()
         {
-            var key = RandomUtility.RandomVarName(16);
+            var key = Utility.NewPassword(16);
             await lockService.Lock(key, "token", TimeSpan.FromSeconds(2));
             var res = await lockService.UnLock(key, "invalidtoken");
             Assert.IsFalse(res);
@@ -119,7 +120,7 @@ namespace YS.Lock
         [TestMethod]
         public async Task ShouldReturnTrueWhenLockAfterUnlock()
         {
-            var key = RandomUtility.RandomVarName(16);
+            var key = Utility.NewPassword(16);
             await lockService.Lock(key, "token", TimeSpan.FromSeconds(2));
             await lockService.UnLock(key, "token");
             var res = await lockService.Lock(key, "token", TimeSpan.FromSeconds(2));
@@ -129,7 +130,7 @@ namespace YS.Lock
         [TestMethod]
         public async Task ShouldReturnFalseWhenUpdateGivenNoExistsKey()
         {
-            var key = RandomUtility.RandomVarName(16);
+            var key = Utility.NewPassword(16);
             var res = await lockService.Update(key, "token", TimeSpan.FromSeconds(2));
             Assert.IsFalse(res);
         }
@@ -137,7 +138,7 @@ namespace YS.Lock
         [TestMethod]
         public async Task ShouldReturnFalseWhenUpdateGivenExpiredKey()
         {
-            var key = RandomUtility.RandomVarName(16);
+            var key = Utility.NewPassword(16);
             await lockService.Lock(key, "token", TimeSpan.FromSeconds(1));
             await Task.Delay(1500);
             var res = await lockService.Update(key, "token", TimeSpan.FromSeconds(2));
@@ -146,7 +147,7 @@ namespace YS.Lock
         [TestMethod]
         public async Task ShouldReturnTrueWhenUpdateGivenExistsKeyAndInvalidToken()
         {
-            var key = RandomUtility.RandomVarName(16);
+            var key = Utility.NewPassword(16);
             await lockService.Lock(key, "token", TimeSpan.FromSeconds(2));
             await Task.Delay(1500);
             var res = await lockService.Update(key, "invalidtoken", TimeSpan.FromSeconds(2));
@@ -156,7 +157,7 @@ namespace YS.Lock
         [TestMethod]
         public async Task ShouldReturnTrueWhenUpdateGivenExistsKeyAndValidToken()
         {
-            var key = RandomUtility.RandomVarName(16);
+            var key = Utility.NewPassword(16);
             await lockService.Lock(key, "token", TimeSpan.FromSeconds(2));
             await Task.Delay(1500);
             var res = await lockService.Update(key, "token", TimeSpan.FromSeconds(2));
@@ -169,7 +170,7 @@ namespace YS.Lock
         [TestMethod]
         public async Task ShouldReturnNoExistsWhenQueryGivenNewKey()
         {
-            var key = RandomUtility.RandomVarName(16);
+            var key = Utility.NewPassword(16);
             var (exists, token) = await lockService.Query<string>(key);
             Assert.IsFalse(exists);
             Assert.AreEqual(default, token);
@@ -178,7 +179,7 @@ namespace YS.Lock
         [TestMethod]
         public async Task ShouldReturnTokenWhenQueryGivenExistsKey()
         {
-            var key = RandomUtility.RandomVarName(16);
+            var key = Utility.NewPassword(16);
             var time = DateTime.Now;
             await lockService.Lock(key, time, TimeSpan.FromSeconds(2));
             var (exists, token) = await lockService.Query<DateTime>(key);
@@ -189,7 +190,7 @@ namespace YS.Lock
         [TestMethod]
         public async Task ShouldNotAffectExpiryWhenQueryGivenExistsKey()
         {
-            var key = RandomUtility.RandomVarName(16);
+            var key = Utility.NewPassword(16);
             await lockService.Lock(key, "token", TimeSpan.FromSeconds(2));
             await Task.Delay(1500);
             var (exists, _) = await lockService.Query<string>(key);
