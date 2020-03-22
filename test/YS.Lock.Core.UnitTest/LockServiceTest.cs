@@ -19,7 +19,7 @@ namespace YS.Lock
         [TestMethod]
         public async Task CanLockSimpleTypes()
         {
-            var key =Utility.NewPassword(16);
+            var key = Utility.NewPassword(16);
             await lockService.Lock(key + "string", "", TimeSpan.FromSeconds(2));
             await lockService.Lock(key + "long", 1L, TimeSpan.FromSeconds(2));
             await lockService.Lock(key + "dateTime", DateTime.Now, TimeSpan.FromSeconds(2));
