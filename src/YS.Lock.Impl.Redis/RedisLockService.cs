@@ -1,9 +1,9 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using System.Text.Json;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
-using System;
-using System.Threading.Tasks;
-using System.Text.Json;
 using YS.Knife;
 
 namespace YS.Lock.Impl.Redis

@@ -1,7 +1,7 @@
-﻿using StackExchange.Redis;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using StackExchange.Redis;
 using YS.Knife;
 
 namespace YS.Lock.Impl.Redis
