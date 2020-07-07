@@ -10,6 +10,7 @@ namespace YS.Lock.Impl.Memory
     [ServiceClass(typeof(ILockService), ServiceLifetime.Singleton)]
     public class MemoryLockService : ILockService
     {
+        static object locker = new object();
         public MemoryLockService(IMemoryCache memoryCache)
         {
             this.memoryCache = memoryCache;
@@ -24,7 +25,7 @@ namespace YS.Lock.Impl.Memory
             }
             else
             {
-                lock (this)
+                lock (locker)
                 {
                     if (memoryCache.TryGetValue(key, out _))
                     {
@@ -54,7 +55,7 @@ namespace YS.Lock.Impl.Memory
             {
                 if (ConvertToString(token) == val)
                 {
-                    lock (this)
+                    lock (locker)
                     {
                         if (this.memoryCache.TryGetValue(key, out _))
                         {
@@ -73,7 +74,7 @@ namespace YS.Lock.Impl.Memory
             {
                 if (ConvertToString(token) == val)
                 {
-                    lock (this)
+                    lock (locker)
                     {
                         if (this.memoryCache.TryGetValue(key, out _))
                         {
