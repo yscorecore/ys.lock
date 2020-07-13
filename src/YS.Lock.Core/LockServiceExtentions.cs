@@ -20,5 +20,35 @@ namespace YS.Lock
         {
             return lockService.Update(key, key, timeSpan);
         }
+        public static async Task<bool> GlobalRunOnce(this ILockService lockService, string key, Action action)
+        {
+            if (action == null) throw new ArgumentNullException(nameof(action));
+            if (await lockService.Lock(key, TimeSpan.MaxValue))
+            {
+                try
+                {
+                    action();
+                    return true;
+                }
+                finally
+                {
+                    await lockService.UnLock(key);
+                }
+            }
+            else
+            {
+                while (true)
+                {
+                    await Task.Delay(100);
+                    var (exists, _) = await lockService.Query<string>(key);
+                    if (!exists)
+                    {
+                        break;
+                    }
+                }
+                return false;
+            }
+
+        }
     }
 }
