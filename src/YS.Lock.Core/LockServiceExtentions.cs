@@ -48,7 +48,6 @@ namespace YS.Lock
                 }
                 return false;
             }
-
         }
     }
 }
