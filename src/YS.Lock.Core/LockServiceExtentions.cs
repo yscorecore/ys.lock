@@ -35,19 +35,28 @@ namespace YS.Lock
                     await lockService.UnLock(key);
                 }
             }
-            else
+            return false;
+        }
+        public static async Task WaitFor(this ILockService lockService, string key, int millisecondsDelayInLoop = 100)
+        {
+            while (true)
             {
-                while (true)
+                await Task.Delay(millisecondsDelayInLoop);
+                var (exists, _) = await lockService.Query<string>(key);
+                if (!exists)
                 {
-                    await Task.Delay(100);
-                    var (exists, _) = await lockService.Query<string>(key);
-                    if (!exists)
-                    {
-                        break;
-                    }
+                    break;
                 }
-                return false;
             }
+        }
+        public static async Task<bool> GlobalRunOnceOrWaitFor(this ILockService lockService, string key, Action action)
+        {
+            var executed = await lockService.GlobalRunOnce(key, action);
+            if (executed == false)
+            {
+                await lockService.WaitFor(key);
+            }
+            return executed;
         }
     }
 }
