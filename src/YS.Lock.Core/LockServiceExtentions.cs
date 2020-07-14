@@ -49,14 +49,13 @@ namespace YS.Lock
                 }
             }
         }
-        public static async Task<bool> GlobalRunOnceOrWaitFor(this ILockService lockService, string key, Action action)
+        public static async Task GlobalRunOnceOrWaitFor(this ILockService lockService, string key, Action action)
         {
             var executed = await lockService.GlobalRunOnce(key, action);
             if (executed == false)
             {
                 await lockService.WaitFor(key);
             }
-            return executed;
         }
     }
 }
