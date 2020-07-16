@@ -51,6 +51,7 @@ namespace YS.Lock
         }
         public static async Task GlobalRunOnceOrWaitFor(this ILockService lockService, string key, Action action)
         {
+            if (action == null) throw new ArgumentNullException(nameof(action));
             var executed = await lockService.GlobalRunOnce(key, action);
             if (executed == false)
             {
