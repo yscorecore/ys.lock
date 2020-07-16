@@ -80,7 +80,43 @@ namespace YS.Lock.Core.UnitTest
             await lockService.WaitFor(key);
 
             var timespan = DateTime.Now - start;
-            Assert.IsTrue(timespan.TotalMilliseconds >= 400 && timespan.TotalMilliseconds < 500);
+            Assert.IsTrue(timespan.TotalMilliseconds >= 400);
+        }
+        [TestMethod]
+        public void ShouldGlobalRunOnceAndWaitForReleaseLock()
+        {
+            var key = Utility.NewPassword();
+            var isFirstTime = true;
+
+            var actionExecutionCount = 0;
+            var locker2 = new object();
+            var locker = new object();
+            Mock.Get(lockService).Setup(p => p.Lock(key, key, It.IsAny<TimeSpan>()))
+               .ReturnsAsync(() =>
+               {
+                   lock (locker)
+                   {
+                       var isFirst = isFirstTime;
+                       isFirstTime = false;
+                       return isFirst;
+                   }
+               });
+            Mock.Get(lockService).Setup(p => p.Query<string>(key))
+                .ReturnsAsync(() => (actionExecutionCount == 0, key));
+
+            var tasks = System.Linq.Enumerable.Range(0, 10).Select(p => lockService.GlobalRunOnceOrWaitFor(key, Action)).ToArray();
+            Task.WaitAll(tasks);
+
+            Assert.AreEqual(1, actionExecutionCount);
+
+            void Action()
+            {
+                lock (locker2)
+                {
+                    Task.Delay(10).Wait();
+                    actionExecutionCount++;
+                }
+            }
         }
     }
 }
