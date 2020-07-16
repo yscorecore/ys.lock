@@ -9,13 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
-    <PackageReference Include="MSTest.TestAdapter" Version="2.1.1" />
-    <PackageReference Include="MSTest.TestFramework" Version="2.1.1" />
-    <PackageReference Include="coverlet.collector" Version="1.2.1" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\YS.Lock.Core.UnitTest\YS.Lock.Core.UnitTest.csproj" />
     <ProjectReference Include="..\..\src\YS.Lock.Impl.Memory\YS.Lock.Impl.Memory.csproj" />
   </ItemGroup>
